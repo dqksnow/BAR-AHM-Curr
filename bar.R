@@ -1,4 +1,4 @@
-library(parallel)
+library(parallel) #this code is a parallel version
 options(scipen=200)
 N=100 # replication times 
 p=8 # number of covariates
@@ -6,11 +6,11 @@ bar  <- function(q){
   library(MASS)
   library(survival)
   library(mvtnorm)
-  n <- 1500 #number of sample
+  n <- 800 #number of sample
   p <- 8 #number of covariaties
   lambda_0 <- 2
   lambda_c0 <- 0.1
-  #COX =matrix(0,2,2)                ## gerenate the multinormal distribution variables matrices##
+  #COX =matrix(0,2,2)                ## gerenate the multinormal distribution variables matrices
   #diag(COX) = c(rep(12,dim(COX)[1]))
   #beta_0 <- c(rep(0.7,2),rep(0,p-4),rep(0.7,2)) 
   beta_0 <- c(1, 0, 1, 0, 1, 0, 1, 0)
@@ -33,21 +33,21 @@ bar  <- function(q){
     
     Z[,7] <- rpois(n,1)
     Z[,8] <- rexp(n,1)
-    if( floor(min(Z[,1:8]%*%beta_0) )>= -lambda_0) {
+    if( floor(min(Z[,1:8]%*%beta_0) )>= -lambda_0) { #in order to avoid negative hazards
       break
     }
   }
   pred0   = Z %*% beta_0
   pred    = pred0 + lambda_0
   set.seed(q)
-  time <- rexp(n,pred)#²ÎÊýheÔ½Ð¡£¬timeÔ½´ó
+  time <- rexp(n,pred)
   set.seed(q)
   #pred_c = exp(pred0)*lambda_c0
   #set.seed(q)
   #mc<- rexp(n,pred_c)
   mc<- runif(n,0,0.33)
   #mc<- runif(n,0,1)
-  #delta_c <- rep(1,n) #ËùÓÐC¶¼ÊÇÒÑÖªµÄ¡¢¹Û²âµ½µÄ
+  #delta_c <- rep(1,n) #which means all c are observed
   delta <- rep(0,n)
   delta[which(time>=mc)] = 1
   
@@ -111,7 +111,7 @@ t1=proc.time()
 results <- parLapply(cl, 1:N , bar)
 t2=proc.time()
 time_cost=t2-t1
-print(paste0('cost time£º',time_cost[3][[1]]/60,'mins'))
+print(paste0('cost timeï¼š',time_cost[3][[1]]/60,'mins'))
 
 MSE.LASSO <- TP.LASSO <- FP.LASSO <- lamb_BIC <-  c() #results
 select_times=matrix(0,N,p)
@@ -138,5 +138,5 @@ bet_sd
 lamb_BIC
 apply(select_times,2,sum)/N
 boxplot(MSE.LASSO)
-#setwd("E:/onedrive/µ±Ç°×´Ì¬Êý¾Ý¿É¼Ó·çÏÕÄ£ÐÍµÄ±äÁ¿Ñ¡ÔñÎÊÌâ0311/0620/C_U_MSE")
+#setwd("my wd")
 #write.csv( MSE.LASSO, file = "MSE_bar.csv",row.names = FALSE)
